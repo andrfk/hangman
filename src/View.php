@@ -1,28 +1,24 @@
 <?php namespace andrfk\hangman\View;
 
-    function showGame($fails, $entryField) {
-        $pseudographics = array (
-            " +---+\n     |\n     |\n     |\n    ===\n ",
-		    " +---+\n 0   |\n     |\n     |\n    ===\n ",
-		    " +---+\n 0   |\n |   |\n     |\n    ===\n ",
-		    " +---+\n 0   |\n/|   |\n     |\n    ===\n ",
-		    " +---+\n 0   |\n/|\  |\n     |\n    ===\n ",
-		    " +---+\n 0   |\n/|\  |\n/    |\n    ===\n ",
-		    " +---+\n 0   |\n/|\  |\n/ \  |\n    ===\n "
-        );
+    use function cli\line;
 
-        echo $pseudographics[$fails];
+function showGame($fails, $gameField)
+{
+    $graphic = array(
+        " +---+\n     |\n     |\n     |\n    ===\n ",
+        " +---+\n 0   |\n     |\n     |\n    ===\n ",
+        " +---+\n 0   |\n |   |\n     |\n    ===\n ",
+        " +---+\n 0   |\n/|   |\n     |\n    ===\n ",
+        " +---+\n 0   |\n/|\  |\n     |\n    ===\n ",
+        " +---+\n 0   |\n/|\  |\n/    |\n    ===\n ",
+        " +---+\n 0   |\n/|\  |\n/ \  |\n    ===\n "
+    );
 
-        
+    echo "\n";
 
-        for ($i = 0; $i < strlen($entryField); $i++) {
-            echo $entryField[$i];
-        }
+    line($graphic[$fails]);
+    line($gameField);
 
-        echo "\n";
-
-        echo "\n";
-    }
-
-    
+    echo "\n";
+}
 ?>

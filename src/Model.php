@@ -2,14 +2,35 @@
 
 namespace andrfk\hangman\Model;
 
-use SQLite3;
+use RedBeanPHP\R;
 
 use function cli\line;
 use function andrfk\hangman\View\showGame;
 
+function startGameDataBase($words, $gameDate, $gameTime, $userName, $word)
+{
+    dbOpen();
+
+    R::exec(
+        "INSERT INTO gamesInfo (
+        gameDate,
+        gameTime,
+        playerName,
+        word,
+        result) VALUES (
+            '$gameDate',
+            '$gameTime',
+            '$userName',
+            '$word',
+            'Игра не закончена')"
+    );
+
+    return R::getCell("SELECT gameId FROM gamesInfo ORDER BY gameId DESC LIMIT 1");
+}
+
 function dbCreate()
 {
-    $action = new SQLite3(('dbGame.db'));
+    R::setup('sqlite:dbGame.db');
 
     $gamesTable = "CREATE TABLE gamesInfo(
         gameId INTEGER PRIMARY KEY,
@@ -18,32 +39,28 @@ function dbCreate()
         playerName TEXT,
         word TEXT,
         result TEXT)";
-    $action->exec($gamesTable);
+    R::exec($gamesTable);
 
     $attemptsInfo = "CREATE TABLE attemptsInfo(
         gameId INTEGER,
         attempts INTEGER,
         letter TEXT,
         result TEXT)";
-
-    $action->exec($attemptsInfo);
-    return $action;
+    R::exec($attemptsInfo);
 }
 
 function dbOpen()
 {
     if (!file_exists("dbGame.db")) {
-        $action = dbCreate();
+        dbCreate();
     } else {
-        $action = new SQLite3('dbGame.db');
+        R::setup('sqlite:dbGame.db');
     }
-    return $action;
 }
 
 function dbUpdate($gameId, $result)
 {
-    $action = dbOpen();
-    $action->exec(
+    R::exec(
         "UPDATE gamesInfo
         SET result = '$result'
         WHERE gameId = '$gameId'"
@@ -52,27 +69,40 @@ function dbUpdate($gameId, $result)
 
 function gameList()
 {
-    $action = dbOpen();
-    $query = $action->query('SELECT * FROM gamesInfo');
-    while ($row = $query->fetchArray()) {
-        line(
-            "ID $row[0])\n    
-        Date: $row[1] $row[2]\n    
-        Name: $row[3]\n    
-        Word: $row[4]\n    
-        Result: $row[5]"
-        );
+    dbOpen();
+    $query = R::getAll('SELECT * FROM gamesInfo');
+    foreach ($query as $row) {
+        line("ID $row[gameId])");
+        line("  Date: $row[gameDate] $row[gameTime]");
+        line("  Name: $row[playerName]");
+        line("  Word: $row[word]");
+        line("  Result: $row[result]");
     }
+}
+
+function attemptsUpdate($gameId, $attempts, $letter, $result)
+{
+    R::exec(
+        "INSERT INTO attemptsInfo ( 
+        gameId,
+        attempts,
+        letter,
+        result) VALUES (
+        '$gameId',
+        '$attempts',
+        '$letter',
+        '$result')"
+    );
 }
 
 function gameReplay($id)
 {
-    $action = dbOpen();
-    $gameId = $action->querySingle("SELECT EXISTS(SELECT 1 FROM gamesInfo WHERE gameId = '$id')");
+    dbOpen();
+    $gameId = R::getCell("SELECT EXISTS(SELECT 1 FROM gamesInfo WHERE gameId = '$id')");
 
     if ($gameId) {
-        $query = $action->query("SELECT letter, result FROM attemptsInfo WHERE gameId = '$id'");
-        $word = $action->querySingle("SELECT word FROM gamesInfo WHERE gameId = '$id'");
+        $query = R::getAll("SELECT letter, result FROM attemptsInfo WHERE gameId = '$id'");
+        $word = R::getCell("SELECT word FROM gamesInfo WHERE gameId = '$id'");
 
         $gameField = "______";
         $gameField[0] = $word[0];
@@ -80,11 +110,11 @@ function gameReplay($id)
         $remaining = substr($word, 1, -1);
         $fails = 0;
 
-        while ($row = $query->fetchArray()) {
+        foreach ($query as $row) {
             showGame($fails, $gameField);
-            $letter = $row[0];
-            $result = $row[1];
-            line("Буква: " . $letter);
+            $letter = $row['letter'];
+            $result = $row['result'];
+            line("Letter: " . $letter);
             for ($i = 0, $iMax = strlen($remaining); $i < $iMax; $i++) {
                 if ($remaining[$i] === $letter) {
                     $gameField[$i + 1] = $letter;
@@ -96,9 +126,9 @@ function gameReplay($id)
                 $fails++;
             }
         }
-
         showGame($fails, $gameField);
-        line($action->querySingle("SELECT result FROM gamesInfo WHERE gameId = '$id'"));
+
+        line(R::getCell("SELECT result FROM gamesInfo WHERE gameId = '$id'"));
     } else {
         line("Такой игры не существует!");
     }
