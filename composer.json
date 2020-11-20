@@ -8,7 +8,10 @@
         }
     ],
     "require": {
-        "wp-cli/php-cli-tools": "^0.11.11"
+        "wp-cli/php-cli-tools": "^0.11.11",
+      "ext-mbstring": "*",
+        "ext-readline": "*",
+        "ext-sqlite3": "*"
     },
     "bin": [
         "bin/hangman"
@@ -16,7 +19,8 @@
     "autoload": {
         "files": [
             "src/Controller.php",
-            "src/View.php"
+            "src/View.php",
+			"src/Model.php"
         ]
     }
 }
