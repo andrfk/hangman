@@ -2,13 +2,19 @@
     $autoloadPathForGithub = __DIR__.'/../vendor/autoload.php';
     $autoloadPathForPackagist = __DIR__.'/../../../autoload.php';
 
+    use function cli\line;
+
     if (file_exists($autoloadPathForGithub)) {
         require_once($autoloadPathForGithub);
     } else {
         require_once($autoloadPathForPackagist);
     }
 
-    use function andrfk\hangman\Controller\startGame;
+    use function andrfk\hangman\Controller\gameMenu;
 
-    startGame();
+    if (isset($argv[1])) {
+        gameMenu($argv);
+    } else {
+        line('Key not entered');
+    }
 ?>
