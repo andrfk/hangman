@@ -9,7 +9,7 @@
     ],
     "require": {
         "wp-cli/php-cli-tools": "^0.11.11",
-      "ext-mbstring": "*",
+        "ext-mbstring": "*",
         "ext-readline": "*",
         "ext-sqlite3": "*"
     },
@@ -20,7 +20,7 @@
         "files": [
             "src/Controller.php",
             "src/View.php",
-			"src/Model.php"
+	    "src/Model.php"
         ]
     }
 }
